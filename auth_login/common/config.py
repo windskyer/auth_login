@@ -129,7 +129,6 @@ class Config():
 
     ## Get ssh server section and option
     def get_one_section(self, section=None, option=None):
-        print self._cf.has_section(section)
         if not self._cf.has_section(section) or section is None:
             raise Autho_LoginException("Not Found ~/.ssh/auth_login in %s section file" % section)
         elif option is None or not self._cf.has_option(section,option): 

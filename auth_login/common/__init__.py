@@ -12,10 +12,9 @@ from  config import Config
 CONF = Config()
 
 # --- function -----#
-
 get_subnet = CONF.get_one_section('subnets','net')
 get_passwd = CONF.get_one_section('passwords','user_passwd')
-get_username = CONF.et_one_section('usernames','user_name')
+get_username = CONF.get_one_section('usernames','user_name')
 
 
-__all__ = []
+__all__ = ['get_subnet', 'get_passwd', 'get_username', 'CONF']
