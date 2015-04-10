@@ -1,0 +1,63 @@
+[DEFAULT]
+ip = net1-%d
+port = 22
+user_name = root 
+user_passwd = teamsun
+is_key = False
+
+[server]
+# 设置要登入的 ssh 服务器的 名字  eg: vm200 | aix140 规则是 "str%d" % ip 地址最后一组
+#ssh service ip address
+ssh_server_alias = vm222|vm200|vm24?aix140,aix212#aix172
+
+[subnets]
+## 输入 有可能要登入的 网段
+net = 172.24.23.0/24 | 192.168.122.0/24
+
+[passwords]
+## 输入 有可能的 密码
+user_passwd = teamsun | toor 
+
+[usernames]
+## 输入 有可能的 用户
+user_name = root | git | love 
+
+[ports]
+## 输入 有可能的端口号
+port = 22 | 2222 | 8888
+
+[vm24]
+#ssh service ip
+
+[vm222]
+#ssh service port
+port = 22 
+
+#ssh service ip 
+ip = 172.24.23.222 
+
+#ssh service user name
+user_name = root 
+
+#ssh service password
+user_passwd = teamsun
+
+#ssh service ssh key auth login
+is_key = False
+
+[vm200]
+#ssh service port
+port = 22 
+
+#ssh service ip 
+ip = 172.24.23.200
+
+#ssh service user name
+user_name = root 
+
+#ssh service password
+user_passwd = teamsun
+
+#ssh service ssh key auth login
+is_key = False
+
