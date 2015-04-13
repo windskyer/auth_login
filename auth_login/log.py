@@ -28,7 +28,8 @@ import logging
 import logging.config
 import logging.handlers
 
-import argparse
+import  argparse
+import os
 
 _DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
@@ -42,6 +43,30 @@ class Error(Exception):
     def __str__(self):
         return self.msg
 
+
+
+
+def _fixpath(p):
+    """Apply tilde expansion and absolutization to a path."""
+    return os.path.abspath(os.path.expanduser(p))
+
+
+
+
+parser = argparse.ArgumentParser(description='Process some integers.')
+
+common_cli_opts = [
+    parser.BoolOpt('debug',
+                short='d',
+                default=False,
+                help='Print debugging output (set logging level to '
+                     'DEBUG instead of default WARNING level).'),
+    cfg.BoolOpt('verbose',
+                short='v',
+                default=False,
+                help='Print more verbose output (set logging level to '
+                     'INFO instead of default WARNING level).'),
+]
 
 
 
