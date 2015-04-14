@@ -61,7 +61,7 @@ common_cli_opts = [
                 default=False,
                 help='Print debugging output (set logging level to '
                      'DEBUG instead of default WARNING level).'),
-    cfg.BoolOpt('verbose',
+    parser.BoolOpt('verbose',
                 short='v',
                 default=False,
                 help='Print more verbose output (set logging level to '
