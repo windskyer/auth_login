@@ -16,13 +16,12 @@ try:
 except ImportError:
     import json
 
+import websocket
+
 
 ## Set client Error class
 class ClientError(Exception):
         pass
-
-
-
 
 class Client(object):
     """ Client conn to SSH Bridge Server """
@@ -59,10 +58,16 @@ class Client(object):
         signal.signal(signal.SIGWINCH, on_term_resize)
 
         try:
+            ## 设置 tty 为 raw 模式就是 没有回显 和输出格式
             tty.setraw(sys.stdin.fileno())
+            
+            ## 设置 tty 为  没有回显 模式  
             tty.setcbreak(sys.stdin.fileno())
-
+            
+            ## 设置 长度 和 宽度
             rows, cols = self._pty_size()
+
+            ## 发送 修改 窗口大小 参数
             ssh.send(json.dumps({'resize': {'width': cols, 'height': rows}}))
 
             while True:

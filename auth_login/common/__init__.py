@@ -15,6 +15,7 @@ CONF = Config()
 get_subnet = CONF.get_one_section('subnets','net')
 get_passwd = CONF.get_one_section('passwords','user_passwd')
 get_username = CONF.get_one_section('usernames','user_name')
+get_wsgi_args = CONF.get_wsgi_args()
 
 
 __all__ = ['get_subnet', 'get_passwd', 'get_username', 'CONF']

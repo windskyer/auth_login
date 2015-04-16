@@ -51,8 +51,6 @@ def _fixpath(p):
     return os.path.abspath(os.path.expanduser(p))
 
 
-
-
 parser = argparse.ArgumentParser(description='Process some integers.')
 
 common_cli_opts = [

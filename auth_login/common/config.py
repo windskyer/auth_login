@@ -174,7 +174,30 @@ class Config(object):
         self._version = version
         self._usage = usage
         self._default_config_files = default_config_files
-        self._args = self._oparser.parse_args()
+        #self._args = self._oparser.parse_args()
+
+    ## set wsgi server startup info
+    def _setup_wsgi(self):
+        self._parser = argparse.ArgumentParser(description='auth_login - SSH Over WebSockets Daemon')
+
+        self._parser.add_argument('--port', '-p',
+                        type=int,
+                        default=5000,
+                        help='Port to bind (default: 5000)')
+
+        self._parser.add_argument('--host', '-H',
+                        default='0.0.0.0',
+                        help='Host to listen to (default: 0.0.0.0)')
+
+        self._parser.add_argument('--allow-agent', '-A',
+                        action='store_true',
+                        default=False,
+                        help='Allow the use of the local (where wsshd is running) ' \
+                        'ssh-agent to authenticate. Dangerous.')
+
+        args = self._parser.parse_args()
+        return args
+
 
     ## call function 
     def __call__(self, 
@@ -275,4 +298,7 @@ class Config(object):
     ## Set ~/.ssh/auth_login  configure file 
     def get_config(self,conf=None,vmname=None):
         print 
+
+    def get_wsgi_args(self):
+        return self._setup_wsgi()
 
