@@ -222,8 +222,47 @@ class Config(object):
         #self._args = self._oparser.parse_args()
 
         #return self._args
+
     ## set wsgi client startup info
-    def _setup_args_wsgi(self):
+    def _setup_args_client(self):
+        parser = argparse.ArgumentParser(
+            description='Auth_Login - SSH Over WebSockets Client')
+        parser.add_argument('--host', '-H',
+                                   help='Auth_Login server host (default: 127.0.0.1)',
+                                   default='127.0.0.1')
+
+        parser.add_argument('--port', '-P',
+                                   help='Auth_Login server port (default: 5000)',
+                                   type=int,
+                                   default=5000)
+
+        parser.add_argument('--password', '-p',
+                                   nargs='?',
+                                   const='',
+                                   help='Password-based authentication. ' \
+                                   'If no password is provided you will be prompted for one')
+
+        parser.add_argument('--key', '-k',
+                            nargs='?',
+                            const='',
+                            help='Private key authentication. ' \
+                            'Selects a file from which the private key ' \
+                            'for RSA or DSA authentication is read.  ' \
+                            'The default is ~/.ssh/id_rsa and ~/.ssh/id_dsa.')
+
+        parser.add_argument('--key-passphrase', '-K',
+                            nargs='?',
+                            const='',
+                            help='Provide a passphrase for encrypted private key files.')
+
+        parser.add_argument('--ssh-port', '-s',
+                            type=int,
+                            default=22,
+                            help='Ssh to server host"s port')
+
+        parser.add_argument('destination',
+                            help='[user@]hostname')
+
 
 
     ## call function 
