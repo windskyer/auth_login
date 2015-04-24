@@ -29,16 +29,17 @@ from StringIO import StringIO
 class WSSHBridge(object):
     """ WebSocket to SSH Bridge Server """
 
-    def __init__(self):
+    def __init__(self, websocket):
         """ Initialize a WSSH Bridge
 
         The websocket must be the one created by gevent-websocket
         """
+        self._websocket = websocket
         self._ssh = paramiko.SSHClient()
         self._ssh.set_missing_host_key_policy(
             paramiko.AutoAddPolicy())
         self._tasks = []
-    
+
     def _load_private_key(self, private_key, passphrase=None):
         """ Load a SSH private key (DSA or RSA) from a string
 
@@ -108,15 +109,15 @@ class WSSHBridge(object):
         """ Forward inbound traffic (websockets -> ssh) """
         try:
             while True:
-                wait_write(channel.fileno())
+                #wait_write(channel.fileno())
                 data = self._websocket.receive()
                 if not data:
                     return
                 data = json.loads(str(data))
                 if 'resize' in data:
                     channel.resize_pty(
-                        data['resize'].get('width', 80),
-                        data['resize'].get('height', 24))
+                        data['resize'].get('width', 132),
+                        data['resize'].get('height', 43))
                 if 'data' in data:
                     channel.send(data['data'])
         finally:
@@ -143,7 +144,7 @@ class WSSHBridge(object):
             gevent.spawn(self._forward_outbound, channel)
         ]
         gevent.joinall(self._tasks)
-    
+
     def close(self):
         """ Terminate a bridge session """
         gevent.killall(self._tasks, block=True)

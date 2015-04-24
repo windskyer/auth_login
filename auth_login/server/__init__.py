@@ -1,7 +1,5 @@
 #author flftuu
 
-import server
-
-WSSHBridge = server.WSSHBridge
+from server import WSSHBridge
 
 __all__ = ['WSSHBridge']

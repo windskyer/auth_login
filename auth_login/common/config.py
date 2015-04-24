@@ -138,17 +138,42 @@ class Config(object):
     """ Config from auth_login.conf file """
     
     ## init function
-    def __init__(self):
+    def __init__(self, object="auth_login"):
 
         self.__sections = []
         self.__options = {}
         self.__servers = []
 
-    ## _setup function
-    def _setup(self, project, prog, version, usage, default_config_files):
-        """Initialize a ConfigOpts object for option parsing."""
+        self._object = object 
+        self._get_config()
 
-        self._oparser = argparse.ArgumentParser(prog=prog, usage=usage)
+    ## Set ~/.ssh/auth_login  configure file 
+    def _get_config(self):
+        self._default_config_files =  find_config_files(self._object) 
+        self._args = self._setup_args_ssh(self._object)
+        if not self._default_config_files:
+            self._default_config_files = self._args.config_file
+
+        if not self._default_config_files:
+            raise Autho_LoginException("Not Found configure file" )
+
+        self._file = self._default_config_files
+        self._cf = ConfigParser()
+        self._cf.read(self._file)
+        self._default_config_files = " | ".join(self._file)
+
+    ## _setup ssh conn function
+    def _setup_args_ssh(self, project):
+        """Initialize a ConfigOpts object for option parsing."""
+        prog = usage = project
+        version = "verbose"
+
+        self._project = project
+        self._prog = prog
+        self._version = version
+        self._usage = usage
+
+        self._oparser = argparse.ArgumentParser(prog=prog, usage=usage, description='%(prog)s - SSH Server Daemon')
 
         self._oparser.add_argument('-v', '--version',
                                    action='version',
@@ -156,7 +181,7 @@ class Config(object):
                                    help='Print more verbose output (set logging level to '
                                         'INFO instead of default WARNING level).')
 
-        self._oparser.add_argument('-d', '--debug',
+        self._oparser.add_argument('-D', '--debug',
                                    action='store_false',
                                    default=False,
                                    help='Print debugging output (set logging level to '
@@ -167,36 +192,38 @@ class Config(object):
                                    help='Path to a config file to use. Multiple config '
                                         'files can be specified, with values in later '
                                         'files taking precedence. The default files '
-                                        ' used are: %s' % (default_config_files, ))
+                                        ' used are: %s' % (self._default_config_files, ))
 
-        self._project = project
-        self._prog = prog
-        self._version = version
-        self._usage = usage
-        self._default_config_files = default_config_files
-        #self._args = self._oparser.parse_args()
+
+        self._setup_args_wsgi()
+
+        self._args = self._oparser.parse_args()
+
+        return self._args
 
     ## set wsgi server startup info
-    def _setup_wsgi(self):
-        self._parser = argparse.ArgumentParser(description='auth_login - SSH Over WebSockets Daemon')
+    def _setup_args_wsgi(self):
 
-        self._parser.add_argument('--port', '-p',
+        self._oparser.add_argument('--wsgi-port', '-P',
                         type=int,
                         default=5000,
-                        help='Port to bind (default: 5000)')
+                        help='Wsgi Server Port to bind (default: 5000)')
 
-        self._parser.add_argument('--host', '-H',
+        self._oparser.add_argument('--wsgi-host', '-H',
                         default='0.0.0.0',
-                        help='Host to listen to (default: 0.0.0.0)')
+                        help='Wsgi Server Host to listen to (default: 0.0.0.0)')
 
-        self._parser.add_argument('--allow-agent', '-A',
+        self._oparser.add_argument('--allow-agent', '-A',
                         action='store_true',
                         default=False,
-                        help='Allow the use of the local (where wsshd is running) ' \
+                        help='Wsgi Server Configure Allow the use of the local (where wsshd is running) ' \
                         'ssh-agent to authenticate. Dangerous.')
 
-        args = self._parser.parse_args()
-        return args
+        #self._args = self._oparser.parse_args()
+
+        #return self._args
+    ## set wsgi client startup info
+    def _setup_args_wsgi(self):
 
 
     ## call function 
@@ -213,7 +240,7 @@ class Config(object):
         if default_config_files is None:
             default_config_files = find_config_files(project=project, prog=prog, extension='.conf')
             if len(default_config_files):
-                raise Autho_LoginException("Not Found auth_login.conf file")
+                raise Autho_LoginException("Not Found %s file" % (self._default_config_files))
 
         self._file = file
         self._cf = ConfigParser()
@@ -222,13 +249,13 @@ class Config(object):
     
     ## Get all ssh server name return list
     def get_all_vmnames(self):
-        if self._cf.has_section('server'):
-            if self._cf.has_option('server','ssh_server_alias'):
-                servernames = self._cf.get('server', 'ssh_server_alias')
+        if self._cf.has_section('ssh_server'):
+            if self._cf.has_option('ssh_server','ssh_server_alias'):
+                servernames = self._cf.get('ssh_server', 'ssh_server_alias')
             else:
-                raise Autho_LoginException("Not Found auth_login.conf in ssh_server_alias option file")
+                raise Autho_LoginException("Not Found %s in ssh_server_alias option file" % (self._default_config_files))
         else:
-            raise Autho_LoginException("Not Found auth_login.conf in server section file")
+            raise Autho_LoginException("Not Found %s in ssh_server section file" % (self._default_config_files))
 
         servernamelist = re.split("\,|\#|\?|\|", servernames)
 
@@ -237,15 +264,24 @@ class Config(object):
         return self.__servers
 
     ## Get all sections return list
-    def get_sections(self):
+    def get_all_sections(self):
         self.__sections = self._cf.sections()
         return self.__sections
 
     ## Get all options return dict
-    def get_options(self):
+    def get_all_options(self):
         for sec in self._cf.sections():
             self.__options[sec] = self._cf.options(sec)
         return self.__options
+
+    ## Get spec one section options return dict
+    def get_one_options(self, section=None):
+        if section is not None:
+            return self._cf.items(section)
+        elif section is None or section not in self.get_all_sections():
+            raise Autho_LoginException("Not Found %s have %s section" % (self._default_config_files, section))
+
+
 
     ## Get spec vmanme values return dict
     def get_vmname_values(self,vmname=None):
@@ -256,7 +292,7 @@ class Config(object):
         
         if vmname not in self._cf.sections():
             #raise Autho_LoginException("Not Found %s sections ~/.ssh/auth_login file " % vmname)
-            print "Waring Not Found %s sections ~/.ssh/auth_login file " % vmname 
+            print "Waring Not Found %s sections %s file " % (vmname , self._default_config_files )
             vmtemp = "DEFAULT"
         else:
             vmtemp = vmname
@@ -283,9 +319,9 @@ class Config(object):
     ## Get ssh server section and option
     def get_one_section(self, section=None, option=None):
         if not self._cf.has_section(section) or section is None:
-            raise Autho_LoginException("Not Found ~/.ssh/auth_login in %s section file" % section)
+            raise Autho_LoginException("Not Found %s  in %s section file" % (self._default_config_files, section))
         elif option is None or not self._cf.has_option(section,option): 
-            raise Autho_LoginException("Not Found ~/.ssh/auth_login  %s option in %s section" % (option, section))
+            raise Autho_LoginException("Not Found %s  %s option in %s section" % (self._default_config_files, option, section))
         sectiondict = {}
         optiondict = {}
         value = self._cf.get(section,option)
@@ -295,10 +331,28 @@ class Config(object):
 
         return sectiondict[section]
                         
-    ## Set ~/.ssh/auth_login  configure file 
-    def get_config(self,conf=None,vmname=None):
-        print 
 
     def get_wsgi_args(self):
-        return self._setup_wsgi()
+        args = {}
+        for value in self.get_one_options('wsgi_server'):
+            args[value[0]] = value[1]
 
+        if  "--debug" in sys.argv or "-D" in sys.argv :
+            args['debug'] = self._args.debug
+
+        if "--allow-agent" in sys.argv or "-A" in sys.argv:
+            args['allow_agent'] = self._args.allow_agent
+
+        if "--wsgi-port" in sys.argv or "-P" in sys.argv:
+            args['wsgi_port'] = self._args.wsgi_port 
+
+        if "--wsgi-host" in sys.argv or "-H" in sys.argv:
+            args['wsgi_host'] = self._args.wsgi_host
+        return args
+
+        #return self._setup_args_wsgi()
+
+    def get_client_args(self):
+        args = {}
+
+        return args
