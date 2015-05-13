@@ -16,6 +16,7 @@ from ConfigParser import re
 
 ##
 import argparse
+from argparse import Namespace
 
 
 ## Function 
@@ -132,6 +133,13 @@ class Autho_LoginException(Exception):
 class ConfigException(Autho_LoginException):
     """ Config file not found """
     message = _("Config file not found")
+
+class _Namespace(Namespace):
+    def __init__(self):
+        pass
+    def __call__(self, confs):
+        if not isinstance(dict, confs):
+           pass 
 
 
 class Config(object):
